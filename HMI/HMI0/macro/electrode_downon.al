@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MacroRegAddressLib><MacroRegAddress Name="X205" OperationMode="1" DataType="signed int" ArrayNumber="1"><Address Function="X205" UseIndexAddr="0" ImportTag="No"><RegAddr MasterValue="205" SlaveValue="0" MasterValueType="2" WordCount="2"><HMIID UsagePort="0">0</HMIID><PLCID PLCGEID="0">0</PLCID><AddressType SystemID="4" bPLCLabelAddr="0">4X</AddressType><AddressValue Type="Word" Length="2" CodeType="0">205</AddressValue><Priority>Обычный</Priority></RegAddr></Address></MacroRegAddress></MacroRegAddressLib>

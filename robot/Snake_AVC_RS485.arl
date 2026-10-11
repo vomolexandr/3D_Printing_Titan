@@ -1,0 +1,146 @@
+////////////////////////////////MODBUS////////////////////////////////
+double k_cor_z = 0.25 //Коефіцієнт корекції по Z
+double measure_area = 6.0 //Зона вимірювання напруги для АРНД
+double mm_per_v = 1.67 //Коеф. співвідношення 1мм до 1В
+double mean_v = 21.5 //середнє значення напруги (для 3мм зазору)
+double min_z = -1.5 //Мінімально допустима координата Z
+
+bool setupstart //Запуск налаштувань при першому старті
+modbus_dev m //Модбас
+byte redata[2] //Масив читання з модбаса
+byte sedata[2] //Масив надсилання модбас
+double ArcVoltage = 0.0 //Поділене значення напруги
+int Voltage_x100 = 0 //Неподілене значення напруги
+double calc_z = 0.0 //Розрахункове значення коорекції
+
+func void setup() //Функція ініціалізації
+open(m, "rtserMB0", 10, 9600, 8, one, none) //Ініціалізації модбас
+clearbuff (m) //Очистка буфера
+endfunc
+
+func void AVCON()
+sedata[0] = 1
+sedata[1] = 0
+waituntil write(m, sedata, 0, 2) //Надсилаэмо модбас
+endfunc
+
+func void AVCOFF()
+sedata[0] = 0
+sedata[1] = 0
+waituntil write(m, sedata, 0, 2)
+endfunc
+
+func void AVCREAD()
+waituntil read(m, redata, 2, 2) //Читаємо модбас
+Voltage_x100 = redata[1] * 256 + redata[0]
+ArcVoltage = Voltage_x100 / 100.0
+print ArcVoltage
+endfunc
+////////////////////////////////MODBUS////////////////////////////////
+
+stoptype fast
+
+
+func void inthandler0() // Прерывание по F3
+stopmove fast
+AVCOFF()
+setdo (1, FALSE)
+waittime time:40
+setdo (6, FALSE)
+pause
+startmove 
+endfunc
+
+
+int newPoint
+//double sl =0.0
+double l=65
+double h=1.5//start height
+double x1=-6.0//shirina change direction
+double s1=4//
+
+
+
+
+pose p1 = { x 0, y 0, z 0, a 179.961, b -0.011, c 178.964, cfg 0, turn -1, ej1 0, ej2 180, ej3 9.000e+09, ej4 9.000e+09, ej5 9.000e+09, ej6 9.000e+09 }
+speed v1 = { per 5, tcp 20, ori 5, exj 3.6746}
+
+
+int i =1
+
+p1.z=h
+p1.y=0
+p1.x=0
+
+func void main()
+interrupt 0, when: getdi(1), do: inthandler0()
+
+////////////////////////////////MODBUS////////////////////////////////
+if (setupstart == false) //Якщо функція ініціалізації не була запущена
+setup() //Запускаємо функцію ініціалізації
+setupstart = true //Флажок, що функція ініціалізації була виконана
+endif
+////////////////////////////////MODBUS////////////////////////////////
+
+waittime 1
+waittime 1
+lin p1,v1,$wobj11
+v1.tcp=12
+p1.x=-x1 
+pause
+setdo (6, TRUE)
+pause
+setdo (1, TRUE)
+waittime time:2.4
+
+loop
+
+if(i%2==1)
+p1.x=-p1.x
+trigger 1, when: S(abs(x1) - measure_area/2), do: AVCON() //MODBUS
+trigger 2, when: StoEnd(abs(x1) - measure_area/2), do: AVCOFF() //MODBUS
+//trigger 3, when: StoEnd(1), do: AVCREAD() //MODBUS
+lin p1,v1,$wobj11 //X move
+waittime time:0.00
+endif
+
+if(i%2==0)
+if (i > 2)
+AVCREAD() //MODBUS
+if (ArcVoltage > 20 && ArcVoltage < 30)
+calc_z = p1.z + (mean_v - ArcVoltage)*mm_per_v*k_cor_z
+if (calc_z < min_z) //Обмеження по мінімальному Z
+calc_z = min_z
+endif
+p1.z = calc_z
+endif
+endif
+p1.y+=s1
+//Z===========================
+lin p1,v1,$wobj11 //Y move
+//////////////////////////////
+
+endif
+
+i++
+if(p1.y>l)
+p1.z=p1.z+2
+v1.tcp=20
+lin p1,v1,$wobj11
+//p1.y =60
+//lin p1,v1,$wobj11
+setdo(1,false)
+waittime(40)
+setdo(6,false)
+i=1
+break
+endif
+
+endloop
+pause
+p1.z=h+15
+lin p1,v1,$wobj11
+p1.x=0
+p1.y=0
+lin p1,v1,$wobj11
+endfunc

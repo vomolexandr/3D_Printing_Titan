@@ -1,0 +1,13 @@
+HMI/** linguist-vendored
+*.arl linguist-language=C
+*.st -linguist-detectable
+*.project binary
+*.dpj binary
+*.wpj binary
+*.whe binary
+*.hmi binary
+*.pkg binary
+*.bg binary
+*.vg binary
+*.st text eol=crlf
+*.md text

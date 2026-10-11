@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MacroRegAddressLib><MacroRegAddress Name="X207" OperationMode="1" DataType="signed int" ArrayNumber="1"><Address Function="X207" UseIndexAddr="0" ImportTag="No"><RegAddr MasterValue="207" SlaveValue="0" MasterValueType="2" WordCount="2"><HMIID UsagePort="0">0</HMIID><PLCID PLCGEID="0">0</PLCID><AddressType SystemID="4" bPLCLabelAddr="0">4X</AddressType><AddressValue Type="Word" Length="2" CodeType="0">207</AddressValue><Priority>Обычный</Priority></RegAddr></Address></MacroRegAddress></MacroRegAddressLib>
